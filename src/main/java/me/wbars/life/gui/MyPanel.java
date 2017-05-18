@@ -156,6 +156,7 @@ public class MyPanel extends JPanel {
 
     void init(List<String> strings) {
         game = RleService.toGame(strings);
+        repaint();
     }
 
     void reload(int rate) {
@@ -173,5 +174,9 @@ public class MyPanel extends JPanel {
 
     int getRate() {
         return rate;
+    }
+
+    public Game game() {
+        return game;
     }
 }

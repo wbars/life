@@ -3,14 +3,48 @@ package me.wbars.life;
 import me.wbars.life.core.Cell;
 import me.wbars.life.core.Game;
 
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static java.lang.Integer.parseInt;
 
 public class RleService {
+
+    private static final int MAX_LINE_SIZE = 72;
+
+    public static List<String> toRle(Game game) {
+        int totalRows = game.maxRow() - game.minRow() + 1;
+        int totalCols = game.maxCol() - game.minCol() + 1;
+        List<String> res = new ArrayList<>(totalRows);
+        res.add(String.format("x = %d, y = %d", totalRows, totalCols));
+        StringBuilder sb = new StringBuilder();
+        for (int row = game.minRow(); row <= game.maxRow(); row++) {
+            int counter = 1;
+            boolean alive = game.alive(row, game.minCol());
+            for (int col = game.minCol() + 1; col <= game.maxCol(); col++) {
+                if (game.alive(row, col) == alive) {
+                    counter++;
+                    continue;
+                }
+                if (counter > 1) sb.append(counter);
+                sb.append(alive ? 'o' : 'b');
+                alive = game.alive(row, col);
+                counter = 1;
+            }
+            if (counter > 1) sb.append(counter);
+            sb.append(alive ? 'o' : 'b');
+
+            if (row == game.maxRow()) sb.append("!");
+            else sb.append("$");
+
+            if (sb.length() > MAX_LINE_SIZE) {
+                res.add(sb.toString());
+                sb.delete(0, Math.min(MAX_LINE_SIZE, sb.length()));
+            }
+        }
+        if (sb.length() > 0) res.add(sb.toString());
+        return res;
+    }
+
     private static class MyIterator implements Iterator<String> {
         private final List<String> data;
         private int i = 0;

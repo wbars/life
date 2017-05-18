@@ -1,5 +1,7 @@
 package me.wbars.life.gui;
 
+import me.wbars.life.RleService;
+
 import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
@@ -41,6 +43,19 @@ public class Main {
             }
         });
         file.add(open);
+
+        JMenuItem saveAs = new JMenuItem("Save as...");
+        saveAs.addActionListener(e -> {
+            JFileChooser fc = new JFileChooser();
+            int result = fc.showSaveDialog(contentPane);
+            if (result != JFileChooser.APPROVE_OPTION) return;
+            try {
+                Files.write(fc.getSelectedFile().toPath(), RleService.toRle(contentPane.game()));
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            }
+        });
+        file.add(saveAs);
 
         JMenu run = new JMenu("Run");
         JMenuItem faster = new JMenuItem("Faster");

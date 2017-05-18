@@ -9,6 +9,22 @@ public class Game {
     private int maxRow;
     private int maxCol;
 
+    public int minRow() {
+        return minRow;
+    }
+
+    public int minCol() {
+        return minCol;
+    }
+
+    public int maxRow() {
+        return maxRow;
+    }
+
+    public int maxCol() {
+        return maxCol;
+    }
+
     private void updateBounds(Cell cell) {
         if (cell.row() < minRow) minRow = cell.row();
         else if (cell.row() > maxRow) maxRow = cell.row();
@@ -72,6 +88,10 @@ public class Game {
         }
         living.clear();
         survived.forEach(this::addCell);
+    }
+
+    public boolean alive(int row, int col) {
+        return living.contains(new Cell(row, col));
     }
 
     private Map<Cell, Integer> getCellsWithNeighbours() {
