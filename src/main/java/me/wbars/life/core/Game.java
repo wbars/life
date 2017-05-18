@@ -1,18 +1,58 @@
 package me.wbars.life.core;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class Game {
-    private State state;
+    private final Set<Cell> living;
+    private int minRow;
+    private int minCol;
+    private int maxRow;
+    private int maxCol;
 
-    public Game(Set<Cell> living) {
-        state = new State(living, State.DEFAULT);
+    private void updateBounds(Cell cell) {
+        if (cell.row() < minRow) minRow = cell.row();
+        else if (cell.row() > maxRow) maxRow = cell.row();
+
+        if (cell.col() < minCol) minCol = cell.col();
+        else if (cell.col() > maxCol) maxCol = cell.col();
     }
 
-    public static Game init(String data) {
+    @Override
+    public String toString() {
+        List<String> rows = new ArrayList<>(maxRow - minRow);
+        for (int i = minRow; i <= maxRow; i++) {
+            StringBuilder sb = new StringBuilder();
+            for (int j = minCol; j <= maxCol; j++) {
+                if (living.contains(new Cell(i, j))) sb.append("*");
+                else sb.append(".");
+            }
+            rows.add(sb.toString());
+        }
+        return rows.stream().reduce((s, s2) -> s + "\n" + s2).orElse("");
+    }
+
+    public Set<Cell> living() {
+        return new HashSet<>(living);
+    }
+
+    private void addCell(Cell cell) {
+        living.add(cell);
+        updateBounds(cell);
+    }
+
+    public Game(Set<Cell> living) {
+        this.living = new HashSet<>();
+        this.minRow = Integer.MAX_VALUE;
+        this.minCol = Integer.MAX_VALUE;
+
+        this.maxRow = Integer.MIN_VALUE;
+        this.maxCol = Integer.MIN_VALUE;
+        for (Cell cell : living) {
+            addCell(cell);
+        }
+    }
+
+    static Game init(String data) {
         String[] rows = data.split("\n");
         Set<Cell> living = new HashSet<>();
         for (int i = 0; i < rows.length; i++) {
@@ -26,16 +66,17 @@ public class Game {
     public void nextGeneration() {
         Set<Cell> survived = new HashSet<>();
         for (Map.Entry<Cell, Integer> e : getCellsWithNeighbours().entrySet()) {
-            if (e.getValue() == 3 || state.contains(e.getKey()) && e.getValue() == 2) {
+            if (e.getValue() == 3 || living.contains(e.getKey()) && e.getValue() == 2) {
                 survived.add(e.getKey());
             }
         }
-        this.state = new State(survived, state);
+        living.clear();
+        survived.forEach(this::addCell);
     }
 
     private Map<Cell, Integer> getCellsWithNeighbours() {
         Map<Cell, Integer> neighboursCount = new HashMap<>();
-        for (Cell cell : state.living()) {
+        for (Cell cell : living()) {
             for (int i = cell.row() - 1; i <= cell.row() + 1; i++) {
                 for (int j = cell.col() - 1; j <= cell.col() + 1; j++) {
                     if (i == cell.row() && j == cell.col()) continue;
@@ -46,16 +87,7 @@ public class Game {
         return neighboursCount;
     }
 
-    public Set<Cell> living() {
-        return state.living();
-    }
-
-    @Override
-    public String toString() {
-        return state.toString();
-    }
-
     public void addCell(int row, int col) {
-        state.addCell(new Cell(row, col));
+        addCell(new Cell(row, col));
     }
 }
